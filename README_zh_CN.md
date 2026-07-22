@@ -68,8 +68,19 @@ sudo modprobe -r xpad && sudo modprobe xpad
 | 20bc | 515f-5160 | KP70A |
 | 20bc | 5169-516a | KP40F（黑色） |
 
+**临时性** DKMS 包，补丁合入主线后弃用（预计 Linux 7.3+）。
+
+## 上游状态
+
+| 项目 | 状态 |
+|------|------|
+| 补丁作者 | Zixing Liu |
+| 已提交 | v3，2026-07-17 |
+| 目标 | Linux 主线（预计 7.3 或后续） |
+| 本包 | 合入后弃用 |
+
 ## 链接
 
-- [完整排查记录（Wiki 页面）](https://github.com/675076143/notes/wiki/beitong-btp-kp40a-linux-usb-disconnect)
+- [完整排查记录（Wiki）](https://github.com/675076143/notes/wiki/beitong-btp-kp40a-linux-usb-disconnect)
 - [上游补丁讨论 (linux-input)](https://lore.kernel.org/linux-input/20260102030154.197749-2-liushuyu@aosc.io/)
 - [Arch Wiki - Gamepad（ShanWan 章节）](https://wiki.archlinux.org/title/Gamepad)

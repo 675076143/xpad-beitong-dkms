@@ -1,6 +1,6 @@
 # xpad-beitong-dkms
 
-DKMS module for patched `xpad` with Beitong KP-series 2.4G gamepad fix.
+**Temporary** DKMS module for patched `xpad` with Beitong KP-series 2.4G gamepad fix. Will be deprecated once the patch is merged upstream (expected Linux 7.3 or later).
 
 ## Problem
 
@@ -11,6 +11,8 @@ Beitong (北通) KP-series gamepads (KP20A, KP40A, KP50B, etc.) disconnect every
 ## Fix
 
 This package applies [Zixing Liu's patch](https://lore.kernel.org/linux-input/20260102030154.197749-2-liushuyu@aosc.io) to `xpad.c`, adding `FLAG_FORCE_INIT` which sends GIP acknowledge and announce packets during controller probing. The firmware recognizes these packets and stays in XINPUT mode.
+
+The patch has been submitted upstream (v3, 2026-07-17) and is pending review. Once merged into the kernel, this DKMS package is no longer needed.
 
 ## Installation
 
@@ -67,6 +69,15 @@ The following VID:PID combinations are recognized:
 | 20bc | 515d-515e | KP40F (White) |
 | 20bc | 515f-5160 | KP70A |
 | 20bc | 5169-516a | KP40F (Black) |
+
+## Upstream Status
+
+| Item | Status |
+|------|--------|
+| Patch author | Zixing Liu |
+| Submitted | v3, 2026-07-17 |
+| Target | Mainline Linux (expected 7.3 or later) |
+| This DKMS | Deprecated after upstream merge |
 
 ## Links
 
