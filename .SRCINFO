@@ -1,0 +1,17 @@
+pkgbase = xpad-beitong-dkms
+	pkgdesc = DKMS module for patched xpad with Beitong KP-series 2.4G gamepad fix
+	pkgver = 1.0
+	pkgrel = 1
+	url = https://github.com/675076143/xpad-beitong-dkms
+	install = xpad-beitong-dkms.install
+	arch = any
+	license = GPL2
+	depends = dkms
+	source = beitong-gip-init.patch
+	source = Makefile
+	source = dkms.conf
+	sha256sums = SKIP
+	sha256sums = SKIP
+	sha256sums = SKIP
+
+pkgname = xpad-beitong-dkms

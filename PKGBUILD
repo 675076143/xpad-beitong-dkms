@@ -1,5 +1,4 @@
-# Maintainer: Zixing Liu <zixing.liu@example.com>
-# Contributor: Your Name <you@example.org>
+# Maintainer: 675076143 <675076143@qq.com>
 #
 # Patch by Zixing Liu that adds FLAG_FORCE_INIT to xpad.c, sending GIP
 # (Game Input Protocol) initialization packets (ACK + ANNOUNCE) to Beitong
@@ -11,7 +10,7 @@ pkgver=1.0
 pkgrel=1
 pkgdesc='DKMS module for patched xpad with Beitong KP-series 2.4G gamepad fix'
 arch=('any')
-url='https://github.com/torvalds/linux'
+url='https://github.com/675076143/xpad-beitong-dkms'
 license=('GPL2')
 depends=('dkms')
 install="${pkgname}.install"
