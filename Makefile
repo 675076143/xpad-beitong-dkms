@@ -1,10 +1,10 @@
 obj-m := xpad.o
 
 all:
-	$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(PWD) LLVM=1 modules
+	$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 
 clean:
-	$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(PWD) LLVM=1 clean
+	$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
 install:
-	$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(PWD) LLVM=1 modules_install
+	$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules_install

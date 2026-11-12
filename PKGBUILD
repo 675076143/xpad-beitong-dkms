@@ -65,7 +65,7 @@ build() {
   fi
 
   msg2 "Building for kernel ${running_kernel}..."
-  make -C "${kdir}" M="${srcdir}" LLVM=1 modules
+  make -C "${kdir}" M="${srcdir}" modules
 }
 
 package() {
