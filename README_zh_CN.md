@@ -43,7 +43,7 @@ sudo modprobe -r xpad && sudo modprobe xpad
 
 ## 工作原理
 
-1. 从当前内核 headers 复制 `xpad.c`
+1. 根据当前运行的内核版本，自动从 kernel.org 下载对应的 xpad.c 源码（若下载失败，则回退到内核 headers 目录中查找）
 2. 应用 GIP 初始化补丁
 3. 注册 DKMS，内核更新后自动重编
 4. 添加 modprobe 黑名单屏蔽内核自带的 `xpad` 模块

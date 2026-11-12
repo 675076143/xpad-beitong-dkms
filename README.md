@@ -45,7 +45,7 @@ sudo modprobe -r xpad && sudo modprobe xpad
 
 ## How it works
 
-1. Copies `xpad.c` from the running kernel's headers
+1. Dynamically download the xpad.c source matching the running kernel version from kernel.org (falls back to searching kernel headers if download fails).
 2. Applies the GIP init patch
 3. Registers with DKMS for automatic rebuilds on kernel updates
 4. Blacklists the in-kernel `xpad` module to ensure the patched one loads

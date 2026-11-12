@@ -14,6 +14,7 @@ url='https://github.com/675076143/xpad-beitong-dkms'
 license=('GPL2')
 depends=('dkms')
 install="${pkgname}.install"
+makedepends=('curl')
 source=(
   'beitong-gip-init.patch'
   'Makefile'
@@ -22,34 +23,59 @@ source=(
 sha256sums=('SKIP' 'SKIP' 'SKIP')
 
 prepare() {
-  local src
-  for d in /usr/lib/modules/*/build/drivers/input/joystick; do
-    if [[ -f "${d}/xpad.c" ]]; then
-      src="${d}/xpad.c"
-      break
-    elif [[ -f "${d}/xpad.c.zst" ]]; then
-      src="${d}/xpad.c.zst"
-      break
-    fi
-  done
+  cd "${srcdir}"
 
-  if [[ -z "${src}" ]]; then
-    error 'xpad.c not found in any kernel headers'
-    error 'Install linux-headers for your running kernel (e.g. linux-headers)'
+  # 提取当前运行内核的主版本号（如 6.8 或 7.2）
+  # uname -r 输出类似 7.2.11-zen1-1-zen，cut 提取出 7.2.11
+  local kernel_ver=$(uname -r | cut -d- -f1)
+  
+  if [[ ! -f xpad.c ]]; then
+    msg2 "Downloading xpad.c for kernel ${kernel_ver}..."
+    
+    # 从 kernel.org 稳定版分支下载对应版本的源码
+    curl -sL -o xpad.c "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/plain/drivers/input/joystick/xpad.c?h=v${kernel_ver}"
+    
+    # 如果下载失败（比如没有该小版本号的 tag），回退到主版本号（如 v6.8）
+    if [[ ! -s xpad.c ]] || grep -q "<html" xpad.c; then
+      local major_ver=$(echo "$kernel_ver" | cut -d. -f1,2)
+      msg2 "Exact version not found, trying major version v${major_ver}..."
+      curl -sL -o xpad.c "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/plain/drivers/input/joystick/xpad.c?h=v${major_ver}"
+    fi
+  fi
+
+  # 兜底逻辑：如果网络下载全失败，按原作者的逻辑在系统头文件目录找找看
+  if [[ ! -s xpad.c ]] || grep -q "<html" xpad.c; then
+    msg2 "Download failed, falling back to searching kernel headers..."
+    local src
+    for d in /usr/lib/modules/*/build/drivers/input/joystick; do
+      if [[ -f "${d}/xpad.c" ]]; then
+        src="${d}/xpad.c"
+        break
+      elif [[ -f "${d}/xpad.c.zst" ]]; then
+        src="${d}/xpad.c.zst"
+        break
+      fi
+    done
+
+    if [[ -n "${src}" ]]; then
+      if [[ "${src}" == *.zst ]]; then
+        zstd -d -f "${src}" -o "${srcdir}/xpad.c"
+      else
+        cp "${src}" "${srcdir}/xpad.c"
+      fi
+    fi
+  fi
+
+  # 如果最终还是没拿到文件，干净地报错退出
+  if [[ ! -s xpad.c ]] || grep -q "<html" xpad.c; then
+    error "Failed to obtain xpad.c. Network issue or unsupported kernel version."
     exit 1
   fi
 
-  msg2 "Using xpad.c from: ${src}"
-
-  if [[ "${src}" == *.zst ]]; then
-    zstd -d -f "${src}" -o "${srcdir}/xpad.c"
-  else
-    cp "${src}" "${srcdir}/xpad.c"
-  fi
-
-  msg2 "Copied xpad.c ($(wc -l < xpad.c) lines)"
-
-  cd "${srcdir}"
+  msg2 "Successfully obtained xpad.c ($(wc -l < xpad.c) lines)"
+  
+  # 应用补丁
+  msg2 "Applying patch..."
   patch -Np0 -i beitong-gip-init.patch
 }
 
