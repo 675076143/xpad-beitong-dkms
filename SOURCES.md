@@ -1,23 +1,34 @@
 # Source provenance and review
 
-## Official driver
+## Current exact-release snapshots
 
-- Repository: https://github.com/torvalds/linux
-- Tag: v6.18; tag object `f7b88edb52c8dd01b7e576390d658ae6eef0e134` resolves to commit `7d0a66e4bb9081d75c82ec4957c50034cb0ea449`.
-- Path: `drivers/input/joystick/xpad.c`.
-- Immutable URL: https://raw.githubusercontent.com/torvalds/linux/7d0a66e4bb9081d75c82ec4957c50034cb0ea449/drivers/input/joystick/xpad.c
-- Local file: `xpad-linux-6.18.c`, 81022 bytes.
-- Git blob: `d72e89c25e5031cb4b9636258aff44cbed263137`, independently matched against the official repository's contents API using `git hash-object` on downloaded bytes.
-- SHA-256: `6f37e6da9c5925b43447ae1a8bc34b7e159cbd8f0411467929ce124b17ca6311`.
-- License: GPL-2.0-or-later, retained in the original file.
+Both vendored files are unmodified official stable sources and byte-identical to the corresponding CachyOS source-tag file. The package prepares a clean, separately patched copy of each. No package/DKMS build downloads source.
 
-This verifies byte identity and pins integrity. It is not a local verification of the release tag's PGP signature. No upstream build scripts were downloaded or executed. Choosing a fixed older snapshot makes the package independent of the packaging host; it does not establish compatibility with arbitrary future kernels or include newer stock xpad improvements.
+| File | Official stable commit | CachyOS source tag / commit | Git blob | SHA-256 |
+|---|---|---|---|---|
+| `xpad-linux-7.3.3.c` | `d50d994bffa3c7c6db2d8bc4c5f0c55e3f46b0cd` | `cachyos-7.3.3-1` / `1d4761de576fb0c50f9b9646c276811a67a173ad` | `810e52782ae891f3273598474b66ac89db13a6c8` | `b47281151829fc382c4bcb5f466865f476a6f4ebfacd617ee49393f99c1e3950` |
+| `xpad-linux-6.18.60.c` | `f45ed76d6791cf72ff1265ee93511175bbbc2f18` | `cachyos-6.18.60-1` / `d98939f3daa1a8553dbea002aab392c970c9a7a7` | `126f99cd0b29ea23099a24cac3aebe63aab1dcf1` | `a82cdcd930f7e9528ca645d68ade181531d2ac4de1e3e8395e7935945a3bb92e` |
 
-## Local GIP patch
+For each commit the path is `drivers/input/joystick/xpad.c` in `gregkh/linux` or `CachyOS/linux`. Immutable references:
 
-The original repository base is `f4ce639f8f2e88ff3f8fbca75c3e5ce9b6857169`. Its `beitong-gip-init.patch`, attributed to Zixing Liu, was reviewed and rebased onto the pinned official driver. Packet bytes, original device list and GIP logic are retained. Context/line numbers changed. The pinned base lacks the original CachyOS source's `20bc` USB vendor match, so the standard Xbox 360 interface-class match for `20bc` is added explicitly. The two duplicate `5134`/`514a` name-only entries from the old source context are not duplicated. No new KP70C1 quirk is added.
+- [Official 7.3.3 source](https://github.com/gregkh/linux/blob/d50d994bffa3c7c6db2d8bc4c5f0c55e3f46b0cd/drivers/input/joystick/xpad.c)
+- [CachyOS 7.3.3 source](https://github.com/CachyOS/linux/blob/1d4761de576fb0c50f9b9646c276811a67a173ad/drivers/input/joystick/xpad.c)
+- [Official 6.18.60 source](https://github.com/gregkh/linux/blob/f45ed76d6791cf72ff1265ee93511175bbbc2f18/drivers/input/joystick/xpad.c)
+- [CachyOS 6.18.60 source](https://github.com/CachyOS/linux/blob/d98939f3daa1a8553dbea002aab392c970c9a7a7/drivers/input/joystick/xpad.c)
 
-Patch preparation failed initially on the device-table context of the original CachyOS-specific diff; the final rebased patch applies completely with `--fuzz=0`. This is why the exact source and patch are now paired and checksummed.
+Local `git hash-object` matches all four independently fetched file responses. GitHub reports valid signatures on all four release-tag objects; this is server-reported verification, not local GPG verification. GPL-2.0-or-later identifiers remain intact. No upstream/fork build scripts were executed.
+
+The read-only CachyOS package recipes map installed version `7.3.3-1` to source tag `cachyos-7.3.3-1`, and `6.18.60-2` to source tag `cachyos-6.18.60-1` (`pkgrel=2` is not the source tag suffix). Recipe revisions reviewed: `6d02fae52812f9c836abffb4a5320aee9e07a294` and `3473896702e3579493c7fa5aac17d797dd392e89`, respectively, in `CachyOS/linux-cachyos`. Their original blobs are `9f53eefe72cc7d52f763841388669388170dff4b` and `fe9c5b1de8bed18dd6730c5de79f866696790ec2`. Installed packages are the znver4 variants; their cached `.BUILDINFO` hashes differ from the generic recipes, so this review does not claim a cryptographic reconstruction of the installed binary from the generic recipe. It establishes exact released source identity, not decompilation of installed modules.
+
+## Why the earlier source strategy was rejected
+
+Commit `9e626f4` is preserved. It pinned official Linux v6.18 (`7d0a66e4bb9081d75c82ec4957c50034cb0ea449`, blob `d72e89c25e5031cb4b9636258aff44cbed263137`), which compiled on both headers but predates stock fixes. Both reviewed releases add a Share-button report-length check before `data[len - offset]`, correct PDP `0e6f:0147` from Xbox One to Xbox 360, and add 23 device IDs. The 7.3.3 file also has RedOctane vendor matching and `kzalloc_obj` conversions. Compilation cannot detect these semantic regressions. That package must not replace newer stock xpad generally.
+
+## Local patches and target selection
+
+Repository base: `f4ce639f8f2e88ff3f8fbca75c3e5ce9b6857169`. Its GIP patch is attributed to Zixing Liu. The two `beitong-linux-*.patch` files rebase only that reviewed repository's packet bytes, original 28-device quirk list and GIP logic onto each exact stock snapshot. The stock `5134` and `514a` entries are replaced by flagged entries rather than duplicated. Existing `20bc` USB interface matching is retained; no extra vendor match, KP70C1 quirk, XUSB request or HID receiver driver is added. All stock device IDs and packet-length protection remain.
+
+DKMS's regex and Makefile's source map permit only `7.3.3-1-cachyos` and `6.18.60-2-cachyos-lts`. The wrapper verifies the header release equals KVER before copying the matching local source to `xpad.c`; unknown or mismatched targets fail. There is no download, glob-based source search, major-version fallback or old source default. Header configuration still selects compiler, with explicit overrides retained. A future target needs a new source review and build, not just a widened regex.
 
 ## Issue and PR decisions
 

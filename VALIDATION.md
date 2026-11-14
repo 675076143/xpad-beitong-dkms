@@ -1,52 +1,52 @@
-# Local validation — 2026-11-14
+# Local validation — exact-release candidate, 2026-11-14
 
-Isolated checkout: `/home/robin/Documents/Codex/2026-11-14/task/xpad-isolated`
-Branch: `local/source-only-dkms`
-Base: `f4ce639f8f2e88ff3f8fbca75c3e5ce9b6857169`
-Evidence: `/home/robin/Documents/Codex/2026-11-14/task/xpad-validation/final`
+Checkout: `/home/robin/Documents/Codex/2026-11-14/task/xpad-isolated`
+Branch: `local/release-source-review`
+Preserved previous commit: `9e626f4b9245a6399e96e3820ebb8b7d225b621a`
+Final evidence directory: `/home/robin/Documents/Codex/2026-11-14/task/xpad-validation/release-candidate`
 
-## Completed
+The earlier v6.18 candidate's results remain in `../xpad-validation/final`; they do not establish release suitability. This revision packages per-target sources as documented in [SOURCES.md](SOURCES.md). Publication gates remain in [RELEASE-REVIEW.md](RELEASE-REVIEW.md).
 
-- `bash -n PKGBUILD dkms.conf`: pass.
-- `python tests/test_package.py`: three tests pass, covering compiler selection from target config, DKMS's KERNELRELEASE argument, explicit LLVM/CC overrides, XPAD_LLVM priority, unknown-config rejection, explicit override with missing config, repeat prepare from clean source, deliberately corrupted source checksum rejection, and generated `.SRCINFO` equality.
-- `makepkg --force`: exit 0, all five SHA-256 checks pass; no dependency checks skipped in the final run. No build function or network access is needed.
-- Archive audit: precisely four package payload files under `/usr/src/xpad-beitong-1.1/` and three standard package metadata entries; no `.ko`, `.INSTALL` or modprobe configuration.
-- Actual driver built directly with each target's installed headers and `KERNELRELEASE`, using the new Makefile wrapper. Both exit 0. Verbose compiler invocations are in `../xpad-validation/actual-clang.log` and `actual-gcc.log`.
-- Final package extracted to an isolated staging tree. Actual DKMS 3.4.4 `add` and `build` run as the normal user with independent source/state/install/tmp trees. Both target builds exit 0 and status is `built` for both. The isolated install tree remains empty; `dkms install` was never run.
+## Completed results
 
-| Target | Header package | Compiler | Final DKMS module vermagic |
+- Shell syntax: `bash -n PKGBUILD dkms.conf`, pass.
+- Three offline tests pass: exact source/compiler selection including DKMS KERNELRELEASE; explicit LLVM, CC and XPAD_LLVM overrides; unknown/mismatched target and config rejection; repeated preparation; preserved stock device IDs and Share-button length checks; deliberate checksum corruption rejection; `.SRCINFO` and DKMS allowlist consistency.
+- `makepkg --force`: exit 0, all seven input checksums pass, normal dependency checks pass. No build function or download is needed.
+- Archive audit: exactly five payload files, all under `/usr/src/xpad-beitong-1.2/`: two prepatched snapshots in `sources/`, plus `Makefile`, `Kbuild`, `dkms.conf`. No `.ko`, `.INSTALL` or modprobe configuration.
+- Actual driver builds through DKMS 3.4.4 in isolated source/state/install/tmp directories, as the normal user. Add/build/status exit 0. Separate Kbuild ensures DKMS's KERNELRELEASE does not bypass the source/compiler wrapper.
+
+| Target | Source baseline | Compiler | DKMS state / vermagic |
 |---|---|---|---|
-| 7.3.3-1-cachyos | linux-cachyos-headers 7.3.3-1 | Clang 23.1.4 | `7.3.3-1-cachyos SMP preempt mod_unload` |
-| 6.18.60-2-cachyos-lts | linux-cachyos-lts-headers 6.18.60-2 | GCC 16.2.1 20260810 | `6.18.60-2-cachyos-lts SMP preempt mod_unload` |
+| `7.3.3-1-cachyos` | Official 7.3.3 = CachyOS source tag | Clang 23.1.4, ThinLTO | built / `7.3.3-1-cachyos SMP preempt mod_unload` |
+| `6.18.60-2-cachyos-lts` | Official 6.18.60 = CachyOS source tag | GCC 16.2.1 20260810 | built / `6.18.60-2-cachyos-lts SMP preempt mod_unload` |
 
-The first target enables Clang ThinLTO; the second uses GCC with no LTO. Compiler and header package ownership were read with pacman. Tool versions: make 4.4.1-3.1; pacman 7.1.0.r9.g54d9411-6. DKMS's installed implementation independently appends LLVM=1 for the Clang target; the shared wrapper also selects correctly when called directly without that help.
+Headers are owned by `linux-cachyos-headers 7.3.3-1` and `linux-cachyos-lts-headers 6.18.60-2`. Both installed target configurations and package provenance were read; header/source paths are explicit. Actual unsupported DKMS build for `7.3.4-1-cachyos` rejects via BUILD_EXCLUSIVE with exit 77 before compiling; see `unsupported.log`.
 
-## Reproduction and evidence
+The isolated install directory is empty. No `dkms install`, depmod, module load/unload, package install, controller interaction or system-configuration change occurred. During test DKMS processes only, `try_sign_modules=false` prevents signing/creating keys for never-installed test outputs; no system policy was edited.
 
-From the checkout, run:
+## Reproduction
+
+From this checkout:
 
 ```sh
+python tests/test_package.py
 python tests/validate_local.py /absolute/path/to/a-new-evidence-directory
 ```
 
-This validates the package, extracts it locally and runs only isolated DKMS add/build/status. The destination must be new. It assumes the two documented headers, makepkg/fakeroot and DKMS are already installed. It does not install software, the package or modules. During this isolated test only, `try_sign_modules=false` is passed in the child environment, producing unsigned never-installed test outputs; no DKMS framework configuration or system signing settings are edited.
+The full script requires the already-installed two headers, makepkg/fakeroot and DKMS. It builds the local package, audits/extracts it and runs only isolated DKMS add/build/status. It never installs software or modules. Use a new evidence directory. Exact executed commands, outputs and exit codes are in `*.log`; actual compiler build logs are under `state/xpad-beitong/1.2/<kernel>/x86_64/log/make.log`.
 
-The final evidence directory includes every exact command, output and exit code in `*.log`, the extracted package under `stage`, and DKMS compiler logs under `state/xpad-beitong/1.1/<kernel>/x86_64/log/make.log`.
+Local package SHA-256 (`xpad-beitong-dkms-1.2-1-any.pkg.tar.zst`):
+`e365401e13b55381b9b8aaf848d5fd7ae3e8ffc0d446f00351c08265d3578f5c`
 
-SHA-256 of final package `xpad-beitong-dkms-1.1-1-any.pkg.tar.zst`:
-`7409f7bbbc1dbb582bc2a869929ff730f04f5b24be81e002544fad7eb384aa74`
+Local module SHA-256 (unsigned build evidence, not release artifacts):
 
-Final isolated DKMS module hashes (local build evidence, not signed release artifacts):
+- 7.3.3: `447a3249e3c10471aaef73a3cdda76b307da0228bcab301230d76b19d8ff7185`
+- 6.18.60: `394ab7a795b14280b7f9e73beecd7d5b57b869815f2ddef6276aff812b1c5fa6`
 
-- Clang target: `697ad26ad51ac7f4d9e21e2f261b0c9ff15d6c3c7973b35cc5bb28327b843d6c`
-- GCC target: `73f65176e57a73265d6124901880a8a8db39e1aafa96995bb27ecf4da1c15e1f`
+Both patches apply at zero fuzz. `git -c core.whitespace=-space-before-tab,-blank-at-eol diff --check` excludes unified-patch context indentation and blank context lines. Those literal context lines are required by the patch format; the source bytes are preserved. Full source comparisons include a missed bounds check and other changes; see RELEASE-REVIEW.md.
 
-Unified patch context contains leading space before tabs by format; `git -c core.whitespace=-space-before-tab diff --check` passes. Patches themselves apply with zero fuzz.
+## Preserved environment and limits
 
-## Preserved system and remaining coverage
+The dirty original AUR checkout `/home/robin/.cache/yay/xpad-beitong-dkms`, installed `/usr/src/xpad-beitong-1.0`, and all system configuration remain untouched. Installed and original AUR `src/xpad.c` still hash to `666568a76d5ff17f4ca02e714c836453c40dfc5cca55e7b304b39118ff262bd2`.
 
-The original dirty AUR checkout `/home/robin/.cache/yay/xpad-beitong-dkms` retains its preexisting `pkgrel` change and package/src/pkg files. No files there were edited. `/usr/src/xpad-beitong-1.0/xpad.c` and the original AUR `src/xpad.c` still share SHA-256 `666568a76d5ff17f4ca02e714c836453c40dfc5cca55e7b304b39118ff262bd2`. No installed driver, system module tree or system configuration was changed.
-
-No root, DKMS install, depmod, module load/unload, controller interaction, push, merge, comment, release or AUR publication occurred. The external fork and contributor PR recipes were read as text; none were executed. The only downloaded executable-source input compiled here is the reviewed official pinned xpad source plus this repository's reviewed patch.
-
-Compilation and package structure are validated; hardware operation, signatures/Secure Boot acceptance, package installation/removal transactions, official Arch linux-zen, other kernels/architectures and KP70C1 support are not. No full hardware or release-readiness claim is made. The source pin intentionally precedes newer stock-driver changes; extending compatibility requires review/rebase and testing. Device changes should remain separate from this packaging repair; issue #2 stays open pending evidence.
+No contributor recipe or external fork code was executed. The only driver code compiled is the reviewed official exact-release source plus the reviewed repository GIP patch. No root, push, merge, GitHub comment, release or AUR publication occurred. Tests do not establish hardware behavior, installation lifecycle or signed-module acceptance; KP70C1 support remains unverified.
