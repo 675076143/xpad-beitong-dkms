@@ -1,86 +1,17 @@
 # xpad-beitong-dkms
 
-为北通 KP 系列 2.4G 手柄修复断连问题的 DKMS 内核模块。
+为现有北通 KP 系列 GIP 初始化补丁提供可复现的纯源码 DKMS 打包。补丁源自 Zixing Liu；本次修复不代表新增硬件支持已经验证。
 
-## 问题
+源码固定为官方 Linux v6.18 的 `xpad.c`（commit `7d0a66e4bb9081d75c82ec4957c50034cb0ea449`），以原样副本随仓库保存。PKGBUILD 的每项输入均有 SHA-256 校验。每次 `prepare()` 从干净副本应用本仓库补丁，不下载、不从本机 headers 搜索源码。详见 [SOURCES.md](SOURCES.md)。
 
-北通 KP 系列手柄（KP20A、KP40A、KP50B 等）在 Linux 上使用 2.4G 无线接收器时，每 ~1 秒断连一次。固件会检测主机操作系统类型，如果在初始化阶段未收到 Xbox One GIP（Game Input Protocol）协议包，则主动断开 USB 重连。
+使用 `makepkg` 构建包。需要 DKMS，以及每个目标内核匹配的 headers 和编译器；Clang 内核另需 LLVM、LLD。归档仅含 `/usr/src/xpad-beitong-1.1/` 下的 `xpad.c`、`Makefile`、`Kbuild`、`dkms.conf`，不含预编译 `.ko`、自定义安装脚本或 modprobe 配置。Arch 的 DKMS pacman hooks 负责安装事务中的登记、编译、安装、移除；本包不主动装载、卸载或重载当前驱动，错误不会被脚本隐藏。确认 DKMS 输出后，在适当时机重启以启用已安装的模块。
 
-**症状：** USB 设备 `20bc:5127` 持续断连重连；蓝牙和 USB 有线模式正常工作。
+Makefile 按目标 `KDIR/.config` 选择工具链：Clang 配置使用 `LLVM=1`，GCC 配置使用 GCC，配置无法识别则明确失败。独立 `Kbuild` 避免 DKMS 的 `KERNELRELEASE` 参数绕过包装逻辑。手动构建可指定 `KDIR` 或 `KVER`；DKMS 传入自己的目标路径与版本。显式 `LLVM=...`、命令行 `CC=...` 会保留；`XPAD_LLVM=...` 可覆盖部分 DKMS 自动追加的 LLVM 参数，空值表示 GCC。覆盖参数不保证与目标内核兼容。
 
-## 修复
+本次实际驱动分别在 `7.3.3-1-cachyos`（Clang 23.1.4、ThinLTO）和 `6.18.60-2-cachyos-lts`（GCC 16.2.1）的 x86_64 headers 上编译。固定源码不保证兼容任意内核、配置或架构，也可能缺少新版本内核驱动中的修复和设备；扩展支持前需审阅并重测。离线检查：`python tests/test_package.py`。完整结果见 [VALIDATION.md](VALIDATION.md)。
 
-应用 [Zixing Liu 的补丁](https://lore.kernel.org/linux-input/20260102030154.197749-2-liushuyu@aosc.io) 到 `xpad.c`，添加 `FLAG_FORCE_INIT` 标志，在手柄探测阶段发送 GIP 确认和声明包。固件收到这些包后确认主机为 Windows/Xbox 驱动，从而稳定工作在 XINPUT 模式。
+保留原补丁的设备 ID 与 GIP 行为。本次未连接或操作手柄，也未安装/装载模块。原项目曾报告 KP40A 可用；不能据此宣称所有列出的设备均验证过。
 
-## 安装
+[Issue #2](https://github.com/675076143/xpad-beitong-dkms/issues/2) 的 KP70C1 Mint 报告显示空闲接收器为 `20dd:518b`、手柄连接后为 `20bc:518b`，且手动加 ID 后仍不可用。因此本次不新增未经验证的设备 quirk，不把空闲接收器当作 XInput。后续需要活动状态接口描述符、内核/驱动日志和经授权的硬件测试，以区分 GIP 初始化与 XUSB 描述符方案。
 
-### 从 AUR
-
-```bash
-yay -S xpad-beitong-dkms
-# 或
-paru -S xpad-beitong-dkms
-```
-
-### 从源码
-
-```bash
-git clone https://github.com/675076143/xpad-beitong-dkms.git
-cd xpad-beitong-dkms
-makepkg -si
-```
-
-安装完成后，重启或执行：
-
-```bash
-sudo modprobe -r xpad && sudo modprobe xpad
-```
-
-## 依赖
-
-- `dkms` 包
-- 当前内核对应的 headers 包（如 `linux-headers`、`linux-zen-headers`、`linux-cachyos-rc-headers` 等）
-
-## 工作原理
-
-1. 从当前内核 headers 复制 `xpad.c`
-2. 应用 GIP 初始化补丁
-3. 注册 DKMS，内核更新后自动重编
-4. 添加 modprobe 黑名单屏蔽内核自带的 `xpad` 模块
-
-## 兼容设备
-
-以下 VID:PID 组合受支持：
-
-| VID | PID | 设备 |
-|-----|-----|------|
-| 20bc | 5125-5128 | KP20A/KP40A |
-| 20bc | 512f-5130 | KP70A |
-| 20bc | 5133-5134 | KP50B |
-| 20bc | 5145-5146 | KP40A/KP40B |
-| 20bc | 5149-514a | KP50C |
-| 20bc | 5150-5151 | KP50D |
-| 20bc | 5152-5153 | KP50E |
-| 20bc | 5154-5155 | KP40D |
-| 20bc | 5158-5159 | KP20D |
-| 20bc | 515b-515c | KP40D（白色） |
-| 20bc | 515d-515e | KP40F（白色） |
-| 20bc | 515f-5160 | KP70A |
-| 20bc | 5169-516a | KP40F（黑色） |
-
-**临时性** DKMS 包，补丁合入主线后弃用（预计 Linux 7.3+）。
-
-## 上游状态
-
-| 项目 | 状态 |
-|------|------|
-| 补丁作者 | Zixing Liu |
-| 已提交 | v3，2026-07-17 |
-| 目标 | Linux 主线（预计 7.3 或后续） |
-| 本包 | 合入后弃用 |
-
-## 链接
-
-- [完整排查记录（Wiki）](https://github.com/675076143/notes/wiki/beitong-btp-kp40a-linux-usb-disconnect)
-- [上游补丁讨论 (linux-input)](https://lore.kernel.org/linux-input/20260102030154.197749-2-liushuyu@aosc.io/)
-- [Arch Wiki - Gamepad（ShanWan 章节）](https://wiki.archlinux.org/title/Gamepad)
+[Issue #1](https://github.com/675076143/xpad-beitong-dkms/issues/1) 的外部 fork 仅按文本审阅，未导入其新版 XUSB/HID 行为。PR #3/#4 仅作为问题报告，本次未执行其 recipe。没有修改原 AUR 工作树、已安装驱动或系统配置，没有发布。

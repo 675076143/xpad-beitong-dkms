@@ -1,86 +1,46 @@
 # Maintainer: 675076143 <675076143@qq.com>
-#
-# Patch by Zixing Liu that adds FLAG_FORCE_INIT to xpad.c, sending GIP
-# (Game Input Protocol) initialization packets (ACK + ANNOUNCE) to Beitong
-# KP-series 2.4G gamepads during probing, fixing the firmware's
-# OS-detection-based disconnect loop.
-
 pkgname=xpad-beitong-dkms
-pkgver=1.0
+pkgver=1.1
 pkgrel=1
-pkgdesc='DKMS module for patched xpad with Beitong KP-series 2.4G gamepad fix'
+pkgdesc='Source-only DKMS xpad module with Beitong KP-series GIP initialization'
 arch=('any')
 url='https://github.com/675076143/xpad-beitong-dkms'
-license=('GPL2')
+license=('GPL-2.0-or-later')
 depends=('dkms')
-install="${pkgname}.install"
-source=(
-  'beitong-gip-init.patch'
-  'Makefile'
-  'dkms.conf'
+makedepends=('patch')
+optdepends=('clang: for Clang-built target kernels'
+            'llvm: for Clang-built target kernels'
+            'lld: for Clang-built target kernels')
+# Vendored byte-for-byte from torvalds/linux v6.18 at this immutable commit:
+# 7d0a66e4bb9081d75c82ec4957c50034cb0ea449
+source=('xpad-linux-6.18.c'
+        'beitong-gip-init.patch'
+        'Makefile'
+        'Kbuild'
+        'dkms.conf')
+sha256sums=(
+  '6f37e6da9c5925b43447ae1a8bc34b7e159cbd8f0411467929ce124b17ca6311'
+  'c5e503c3c55341673a33e964585e41b9edd3669e40cc64057915fe7d52968042'
+  '0801cbf8aff8bdc299e48d3508af7d28398385b44e930b77d83265ba7e08c09b'
+  '03181e10ba96fe4da2946fde4f1246e0fe8b24caa7e4955a18a7b230cb6ab720'
+  '0065699eb197974743ac678f81dbccf505792c3f3c070acb8a28ab2e3e6c78a9'
 )
-sha256sums=('SKIP' 'SKIP' 'SKIP')
 
 prepare() {
-  local src
-  for d in /usr/lib/modules/*/build/drivers/input/joystick; do
-    if [[ -f "${d}/xpad.c" ]]; then
-      src="${d}/xpad.c"
-      break
-    elif [[ -f "${d}/xpad.c.zst" ]]; then
-      src="${d}/xpad.c.zst"
-      break
-    fi
-  done
-
-  if [[ -z "${src}" ]]; then
-    error 'xpad.c not found in any kernel headers'
-    error 'Install linux-headers for your running kernel (e.g. linux-headers)'
-    exit 1
-  fi
-
-  msg2 "Using xpad.c from: ${src}"
-
-  if [[ "${src}" == *.zst ]]; then
-    zstd -d -f "${src}" -o "${srcdir}/xpad.c"
-  else
-    cp "${src}" "${srcdir}/xpad.c"
-  fi
-
-  msg2 "Copied xpad.c ($(wc -l < xpad.c) lines)"
-
-  cd "${srcdir}"
-  patch -Np0 -i beitong-gip-init.patch
+  # Recreate our working directory whenever prepare() runs again.
+  rm -rf -- "${srcdir}/module"
+  mkdir -- "${srcdir}/module"
+  cp -- "${srcdir}/xpad-linux-6.18.c" "${srcdir}/module/xpad.c"
+  cp -- "${srcdir}/Makefile" "${srcdir}/Kbuild" "${srcdir}/module/"
+  cd "${srcdir}/module"
+  patch --batch --fuzz=0 -Np0 -i "${srcdir}/beitong-gip-init.patch"
 }
 
-build() {
-  cd "${srcdir}"
-
-  local running_kernel="$(uname -r)"
-  local kdir="/usr/lib/modules/${running_kernel}/build"
-
-  if [[ ! -d "${kdir}" ]]; then
-    warning "Kernel build dir not found for ${running_kernel}. DKMS will build at install time."
-    return 0
-  fi
-
-  msg2 "Building for kernel ${running_kernel}..."
-  make -C "${kdir}" M="${srcdir}" LLVM=1 modules
-}
-
+# No build(): the package contains no host-kernel .ko. DKMS builds for targets.
 package() {
-  cd "${srcdir}"
-  local dkms_dst="${pkgdir}/usr/src/xpad-beitong-${pkgver}"
-
-  install -Dm644 xpad.c               "${dkms_dst}/xpad.c"
-  install -Dm644 beitong-gip-init.patch "${dkms_dst}/beitong-gip-init.patch"
-  install -Dm644 Makefile             "${dkms_dst}/Makefile"
-
-  sed "s/@PKGVER@/${pkgver}/g" "${srcdir}/dkms.conf" > "${dkms_dst}/dkms.conf"
-  chmod 644 "${dkms_dst}/dkms.conf"
-
-  local running_kernel="$(uname -r)"
-  if [[ -f xpad.ko ]]; then
-    install -Dm644 xpad.ko "${pkgdir}/usr/lib/modules/${running_kernel}/updates/dkms/xpad.ko"
-  fi
+  local dst="${pkgdir}/usr/src/xpad-beitong-${pkgver}"
+  install -Dm644 "${srcdir}/module/xpad.c" "${dst}/xpad.c"
+  install -m644 "${srcdir}/module/Makefile" "${srcdir}/module/Kbuild" "${dst}/"
+  sed "s/@PKGVER@/${pkgver}/g" "${srcdir}/dkms.conf" > "${dst}/dkms.conf"
+  chmod 644 "${dst}/dkms.conf"
 }
