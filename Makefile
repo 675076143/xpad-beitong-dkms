@@ -5,6 +5,7 @@ KDIR ?= /usr/lib/modules/$(KVER)/build
 
 # Only exact reviewed releases have a source. Never fall back to an older driver.
 XPAD_SOURCE_7.3.3-1-cachyos := sources/xpad-linux-7.3.3.c
+XPAD_SOURCE_7.3.4-1-cachyos := sources/xpad-linux-7.3.4.c
 XPAD_SOURCE_6.18.60-2-cachyos-lts := sources/xpad-linux-6.18.60.c
 XPAD_SOURCE := $(XPAD_SOURCE_$(KVER))
 ifeq ($(XPAD_SOURCE),)

@@ -11,9 +11,11 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 TARGETS = {'7.3.3-1-cachyos': ('7.3.3', 'CLANG', '1'),
+           '7.3.4-1-cachyos': ('7.3.4', 'CLANG', '1'),
            '6.18.60-2-cachyos-lts': ('6.18.60', 'GCC', '')}
 INPUTS = ('PKGBUILD', 'xpad-linux-7.3.3.c', 'xpad-linux-6.18.60.c',
           'beitong-linux-7.3.3.patch', 'beitong-linux-6.18.60.patch',
+          'xpad-linux-7.3.4.c', 'beitong-linux-7.3.4.patch',
           'Makefile', 'Kbuild', 'dkms.conf')
 
 
@@ -60,7 +62,7 @@ class PackageTests(unittest.TestCase):
         self.assertIn('Cannot identify target compiler', p.stdout)
         p = run(['make', f'KDIR={headers}', f'KVER={target}', 'LLVM=-23', 'clean'], module)
         self.assertEqual(p.returncode, 0, p.stdout)
-        p = run(['make', f'KDIR={headers}', 'KVER=7.3.4-1-cachyos', 'LLVM=1'], module)
+        p = run(['make', f'KDIR={headers}', 'KVER=7.3.5-1-cachyos', 'LLVM=1'], module)
         self.assertNotEqual(p.returncode, 0)
         self.assertIn('Unsupported target', p.stdout)
         (headers / 'include/config/kernel.release').write_text('different-headers\n')
@@ -101,7 +103,7 @@ class PackageTests(unittest.TestCase):
         pattern = re.search(r'BUILD_EXCLUSIVE_KERNEL="([^"]+)"', config).group(1)
         for target in TARGETS:
             self.assertIsNotNone(re.fullmatch(pattern, target))
-        for target in ('7.3.4-1-cachyos', '6.18.61-2-cachyos-lts', '7.3.3-custom'):
+        for target in ('7.3.5-1-cachyos', '6.18.61-2-cachyos-lts', '7.3.3-custom'):
             self.assertIsNone(re.fullmatch(pattern, target))
 
 

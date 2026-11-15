@@ -4,13 +4,13 @@
 
 前一版本地提交 `9e626f4` 虽然编译通过，但 Linux v6.18 固定副本缺少两个目标版本已有的 Share 按钮报文长度检查和其他更新，不能作为通用的新内核 stock xpad 替代品发布。
 
-本版保存官方 Linux **7.3.3 与 6.18.60** 两份精确源码，已与对应 CachyOS release 的源码逐字节核对。每份源码对应单独补丁，所有输入均有 SHA-256 校验。每次 `prepare()` 从干净副本打补丁；DKMS 只按精确目标版本选择随包源码，不下载、不回退旧版本。Makefile 和 DKMS 均只允许 `7.3.3-1-cachyos`、`6.18.60-2-cachyos-lts`，升级到其他内核时跳过构建，须独立审阅并扩充矩阵。详见 [SOURCES.md](SOURCES.md) 与 [RELEASE-REVIEW.md](RELEASE-REVIEW.md)。
+本版保存官方 Linux **7.3.3、7.3.4 与 6.18.60** 三份精确源码，已与对应 CachyOS release 的源码逐字节核对。每份源码对应单独补丁，所有输入均有 SHA-256 校验。每次 `prepare()` 从干净副本打补丁；DKMS 只按精确目标版本选择随包源码，不下载、不回退旧版本。Makefile 和 DKMS 均只允许 `7.3.3-1-cachyos`、`7.3.4-1-cachyos`、`6.18.60-2-cachyos-lts`，升级到其他内核时跳过构建，须独立审阅并扩充矩阵。详见 [SOURCES.md](SOURCES.md) 与 [RELEASE-REVIEW.md](RELEASE-REVIEW.md)。
 
-使用 `makepkg` 构建包。需要 DKMS，以及每个目标内核匹配的 headers 和编译器；Clang 内核另需 LLVM、LLD。归档仅含 `/usr/src/xpad-beitong-1.2/` 下 `sources/` 中的两份已打补丁源码及 `Makefile`、`Kbuild`、`dkms.conf`，不含预编译 `.ko`、自定义安装脚本或 modprobe 配置。Arch 的 DKMS pacman hooks 负责安装事务中的登记、编译、安装、移除；本包不主动装载、卸载或重载当前驱动，错误不会被脚本隐藏。确认 DKMS 输出后，在适当时机重启以启用已安装的模块。
+使用 `makepkg` 构建包。需要 DKMS，以及每个目标内核匹配的 headers 和编译器；Clang 内核另需 LLVM、LLD。归档仅含 `/usr/src/xpad-beitong-1.3/` 下 `sources/` 中的三份已打补丁源码及 `Makefile`、`Kbuild`、`dkms.conf`，不含预编译 `.ko`、自定义安装脚本或 modprobe 配置。Arch 的 DKMS pacman hooks 负责安装事务中的登记、编译、安装、移除；本包不主动装载、卸载或重载当前驱动，错误不会被脚本隐藏。确认 DKMS 输出后，在适当时机重启以启用已安装的模块。
 
 Makefile 按目标 `KDIR/.config` 选择工具链：Clang 配置使用 `LLVM=1`，GCC 配置使用 GCC，配置无法识别则明确失败。独立 `Kbuild` 避免 DKMS 的 `KERNELRELEASE` 参数绕过包装逻辑。手动构建可指定 `KDIR` 或 `KVER`；DKMS 传入自己的目标路径与版本。显式 `LLVM=...`、命令行 `CC=...` 会保留；`XPAD_LLVM=...` 可覆盖部分 DKMS 自动追加的 LLVM 参数，空值表示 GCC。覆盖参数不保证与目标内核兼容。
 
-本次实际驱动分别在 `7.3.3-1-cachyos`（Clang 23.1.4、ThinLTO）和 `6.18.60-2-cachyos-lts`（GCC 16.2.1）的 x86_64 headers 上编译。其他目标版本会明确拒绝；相同版本名的自定义源码、其他配置或架构也不能自动视为已验证。扩展支持前需审阅并重测。离线检查：`python tests/test_package.py`。完整结果见 [VALIDATION.md](VALIDATION.md)。
+当前候选在 `7.3.4-1-cachyos`（现装 Clang 23.1.5、ThinLTO；内核原用 23.1.4，保留版本差异警告）和 `6.18.60-2-cachyos-lts`（GCC 16.2.1）的 x86_64 headers 上完成隔离 DKMS 构建。旧 `7.3.3-1-cachyos` 目标保留原源码及允许列表，但 headers 已不在本机，本次未重编；历史 1.2 候选曾验证通过。其他目标版本会明确拒绝；相同版本名的自定义源码、其他配置或架构也不能自动视为已验证。扩展支持前需审阅并重测。离线检查：`python tests/test_package.py`。当前结果见 [VALIDATION-7.3.4.md](VALIDATION-7.3.4.md)，历史结果见 [VALIDATION.md](VALIDATION.md)。
 
 保留原补丁的设备 ID 与 GIP 行为。本次未连接或操作手柄，也未安装/装载模块。原项目曾报告 KP40A 可用；不能据此宣称所有列出的设备均验证过。
 

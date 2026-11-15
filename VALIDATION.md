@@ -1,3 +1,5 @@
+> Historical 1.2 evidence retained unchanged below. The current 1.3 extension is documented in [VALIDATION-7.3.4.md](VALIDATION-7.3.4.md).
+
 # Local validation — exact-release candidate, 2026-11-14
 
 Checkout: `/home/robin/Documents/Codex/2026-11-14/task/xpad-isolated`
