@@ -14,7 +14,7 @@ Only `7.3.3-1-cachyos`, `7.3.4-1-cachyos` and `6.18.60-2-cachyos-lts` are allowe
 
 On Arch/CachyOS, install DKMS and headers matching each intended target kernel. Clang-built targets also need Clang, LLVM and LLD; GCC-built targets need the matching GCC/binutils toolchain. Kernel configuration determines which kernel features are compiled into the driver.
 
-Build the package with `makepkg`. It contains only six files under `/usr/src/xpad-beitong-1.3/`: three prepatched snapshots in `sources/`, `Kbuild`, `Makefile` and `dkms.conf`. There is no host-specific `.ko`, custom `.install` hook or modprobe configuration.
+Build the package with `makepkg`. It contains only seven files under `/usr/src/xpad-beitong-1.3/`: three prepatched snapshots in `sources/`, `Kbuild`, `Makefile`, `dkms.conf` and the pinned source/attribution record `SOURCES.md`. There is no host-specific `.ko`, custom `.install` hook or modprobe configuration.
 
 Arch's DKMS pacman hooks handle registration, rebuild, installation and removal during package transactions. Failures remain visible. This package does not explicitly load, unload or reload a live module. Review the DKMS transaction output and reboot when ready to activate an installed build. No package or module was installed during this validation.
 
@@ -45,3 +45,5 @@ The existing patch retains the original `20bc` IDs: `5125–5128`, `512f–5130`
 The external fork in [issue #1](https://github.com/675076143/xpad-beitong-dkms/issues/1) was reviewed as text only. Its newer XUSB/HID behavior was not imported. PRs [#3](https://github.com/675076143/xpad-beitong-dkms/pull/3) and [#4](https://github.com/675076143/xpad-beitong-dkms/pull/4) informed the packaging fixes; their recipes were not executed.
 
 A practical, unexecuted reporter plan is available in [KP70C1-VALIDATION.md](KP70C1-VALIDATION.md). Publication remains blocked on the release gates in [RELEASE-REVIEW.md](RELEASE-REVIEW.md).
+
+**Generic AUR replacement is not ready:** official Arch/linux-zen and legacy upgrade behavior remain unverified and excluded by this candidate. See [AUR-READINESS.md](AUR-READINESS.md) for current AUR identity and actual controlled lifecycle evidence; these results do not authorize replacing the existing generic AUR package.

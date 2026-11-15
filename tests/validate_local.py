@@ -40,7 +40,7 @@ archive = repo / 'xpad-beitong-dkms-1.3-1-any.pkg.tar.zst'
 listing = run('archive-list', ['bsdtar', '-tf', str(archive)])
 allowed = {'.BUILDINFO', '.MTREE', '.PKGINFO', 'usr/', 'usr/src/',
            'usr/src/xpad-beitong-1.3/', 'usr/src/xpad-beitong-1.3/sources/'} | {
-               'usr/src/xpad-beitong-1.3/' + n for n in ('sources/xpad-linux-7.3.3.c', 'sources/xpad-linux-6.18.60.c', 'sources/xpad-linux-7.3.4.c', 'Makefile', 'Kbuild', 'dkms.conf')}
+               'usr/src/xpad-beitong-1.3/' + n for n in ('sources/xpad-linux-7.3.3.c', 'sources/xpad-linux-6.18.60.c', 'sources/xpad-linux-7.3.4.c', 'Makefile', 'Kbuild', 'dkms.conf', 'SOURCES.md')}
 assert set(listing.splitlines()) == allowed, listing
 stage = out / 'stage'
 stage.mkdir()

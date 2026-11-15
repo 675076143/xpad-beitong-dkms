@@ -16,7 +16,7 @@ TARGETS = {'7.3.3-1-cachyos': ('7.3.3', 'CLANG', '1'),
 INPUTS = ('PKGBUILD', 'xpad-linux-7.3.3.c', 'xpad-linux-6.18.60.c',
           'beitong-linux-7.3.3.patch', 'beitong-linux-6.18.60.patch',
           'xpad-linux-7.3.4.c', 'beitong-linux-7.3.4.patch',
-          'Makefile', 'Kbuild', 'dkms.conf')
+          'Makefile', 'Kbuild', 'dkms.conf', 'SOURCES.md')
 
 
 def run(args, cwd):

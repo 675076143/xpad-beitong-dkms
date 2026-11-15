@@ -21,7 +21,8 @@ source=('xpad-linux-7.3.3.c'
         'beitong-linux-6.18.60.patch'
         'Makefile'
         'Kbuild'
-        'dkms.conf')
+        'dkms.conf'
+        'SOURCES.md')
 sha256sums=(
   'b47281151829fc382c4bcb5f466865f476a6f4ebfacd617ee49393f99c1e3950'
   'd3d9500cac4a59aad0a6bfe1d064e5a4c16cfc18d928f4bf6f69f6fd51511176'
@@ -32,6 +33,7 @@ sha256sums=(
   '7e2e2fa590a6df090c53e4eb3fbddcabef29f4aa188c1490c4a9215a69fe2a0a'
   '03181e10ba96fe4da2946fde4f1246e0fe8b24caa7e4955a18a7b230cb6ab720'
   'bd2a676bb60f06b8c1c991a644ce34a0d1f17e4430c44775bbedd791cdb6e92e'
+  '9cdd71793f0c7f97e570c003adaa8cf1f2c0ef4e827b0c9477b78a5089fe4f1c'
 )
 
 prepare() {
@@ -58,4 +60,5 @@ package() {
   install -m644 "${srcdir}/Makefile" "${srcdir}/Kbuild" "${dst}/"
   sed "s/@PKGVER@/${pkgver}/g" "${srcdir}/dkms.conf" > "${dst}/dkms.conf"
   chmod 644 "${dst}/dkms.conf"
+  install -m644 "${srcdir}/SOURCES.md" "${dst}/SOURCES.md"
 }

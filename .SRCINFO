@@ -19,6 +19,7 @@ pkgbase = xpad-beitong-dkms
 	source = Makefile
 	source = Kbuild
 	source = dkms.conf
+	source = SOURCES.md
 	sha256sums = b47281151829fc382c4bcb5f466865f476a6f4ebfacd617ee49393f99c1e3950
 	sha256sums = d3d9500cac4a59aad0a6bfe1d064e5a4c16cfc18d928f4bf6f69f6fd51511176
 	sha256sums = a82cdcd930f7e9528ca645d68ade181531d2ac4de1e3e8395e7935945a3bb92e
@@ -28,5 +29,6 @@ pkgbase = xpad-beitong-dkms
 	sha256sums = 7e2e2fa590a6df090c53e4eb3fbddcabef29f4aa188c1490c4a9215a69fe2a0a
 	sha256sums = 03181e10ba96fe4da2946fde4f1246e0fe8b24caa7e4955a18a7b230cb6ab720
 	sha256sums = bd2a676bb60f06b8c1c991a644ce34a0d1f17e4430c44775bbedd791cdb6e92e
+	sha256sums = 9cdd71793f0c7f97e570c003adaa8cf1f2c0ef4e827b0c9477b78a5089fe4f1c
 
 pkgname = xpad-beitong-dkms

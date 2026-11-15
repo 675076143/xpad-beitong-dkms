@@ -26,7 +26,7 @@ Local complete diffs and read-only recipes are in `/home/robin/Documents/Codex/2
 | Preserve original local candidate | Green | `9e626f4` remains ancestor and tip of `local/source-only-dkms`; review continues separately. |
 | Preserve stock source for allowed releases | Green, scoped | Exact stock snapshot per target; no old-source fallback; source and patch hashes in PKGBUILD. Generic recipe provenance does not reconstruct installed znver4 binaries. |
 | Unknown/new kernel safety | Green | DKMS allowlist now returns 77 for unreviewed 7.3.5; 7.3.4 is independently reviewed and added; wrapper rejects unknown KVER and mismatched headers. New releases require review. |
-| Source-only package and repeatability | Green | Nine checksum inputs pass; repeat prepare yields identical source hashes; checksum tampering rejected; archive contains only six source/config payload files. |
+| Source-only package and repeatability | Green | Ten checksum inputs pass; repeat prepare yields identical source hashes; checksum tampering rejected; archive contains only seven source/config/provenance payload files. |
 | Actual compile and DKMS build | Green, scoped | Current 7.3.4 and LTS headers compile; old 7.3.3 header is absent and only its prior evidence is retained; isolated DKMS status `built`, matching vermagic. Unsigned test outputs never installed. |
 | Current driver/hardware regression test | Red / not performed | No device interaction. Validate intended original-device fix, unrelated-controller behavior, reconnect and D-pad semantics in a separately authorized session. |
 | Installation/removal, signing and activation | Red / not performed | Only isolated add/build/status tested. Transaction lifecycle and signature acceptance need a controlled test before release. |
@@ -39,3 +39,7 @@ The clear packaging improvement has been implemented and tested locally, but gre
 ## Current extension
 
 See [VALIDATION-7.3.4.md](VALIDATION-7.3.4.md): 7.3.4 exact sources have been checked, the one-row stock device addition is preserved, and 7.3.4/LTS isolated DKMS builds pass. The compiler patch-version warning remains documented. No installation or hardware gate is closed by this build. Field observations of the running DKMS 1.0 driver are not candidate 1.3 validation.
+
+## AUR publication supplement
+
+[AUR-READINESS.md](AUR-READINESS.md) records current public AUR metadata and the completed controlled candidate pacman lifecycle tests. Those do not validate the old 1.0 script migration or official Arch/linux-zen upgrade behavior. The generic AUR replacement gate remains red; no publication is approved by this local review.
