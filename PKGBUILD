@@ -1,8 +1,8 @@
 # Maintainer: 675076143 <675076143@qq.com>
 pkgname=xpad-beitong-dkms
-pkgver=1.3
+pkgver=1.4
 pkgrel=1
-pkgdesc='Source-only Beitong xpad DKMS candidate for three reviewed CachyOS releases'
+pkgdesc='Source-only Beitong xpad DKMS candidate for five reviewed Arch and CachyOS releases'
 arch=('any')
 url='https://github.com/675076143/xpad-beitong-dkms'
 license=('GPL-2.0-or-later')
@@ -30,10 +30,10 @@ sha256sums=(
   '985def323765e0839a64a3ac7251c2cc2362bee3566522fe57b5f3bd8ed4b260'
   '1e7db24552f5eeb6f3d0d09c65708726dca36e5032c9e30af94be8db0de274ce'
   '89066afcc16dfed2d03b9b9e36b449eeb72ec17c8abfe5d72f15b6f1440bb870'
-  '7e2e2fa590a6df090c53e4eb3fbddcabef29f4aa188c1490c4a9215a69fe2a0a'
+  '90f3fbe2cf398568128c3a5bb466ac176d03f167d866f22d34e5516c789d8900'
   '03181e10ba96fe4da2946fde4f1246e0fe8b24caa7e4955a18a7b230cb6ab720'
-  'bd2a676bb60f06b8c1c991a644ce34a0d1f17e4430c44775bbedd791cdb6e92e'
-  '9cdd71793f0c7f97e570c003adaa8cf1f2c0ef4e827b0c9477b78a5089fe4f1c'
+  'e010e7f0c6788d61d26f36854c8ae97e5f236318457cdf7d0d850fb452427f41'
+  'd771c0be6b74a771b801ecb3b5b25db21ec6f34a745d9266c198940d60204b33'
 )
 
 prepare() {

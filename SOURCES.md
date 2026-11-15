@@ -50,3 +50,20 @@ The exact CachyOS recipe at `8e308d0a3895dbc741381fb61b9a9a8603be793d` (`linux-c
 - [Official stable 7.3.4 xpad](https://github.com/gregkh/linux/blob/7595a62d45ee1a2297eafa5f2ef5d0a45142d84d/drivers/input/joystick/xpad.c)
 
 A complete 7.3.3 → 7.3.4 xpad diff contains exactly one added device-table row: GameSir Nova Lite `3537:1040`, Xbox 360 type. No existing stock code or Beitong mechanism changes. This row remains in the new source. The reviewed 7.3.3 GIP patch applied at zero fuzz, with one-line offsets after the stock addition; the saved 7.3.4 patch is regenerated against its exact base. No contributor/fork recipe is executed and no new device quirk is enabled. Prior 7.3.3/LTS sources and patches are byte-unchanged from `5b0cb17`. See VALIDATION-7.3.4.md for the compiler patch-version warning and current test limits.
+
+## Official Arch/linux-zen verification — 2026-11-15
+
+The exact signed packages are `linux`/`linux-headers 7.3.4.arch1-2` and `linux-zen`/`linux-zen-headers 7.3.4.zen2-2`. All four detached package signatures verify locally against the installed, signature-validated Arch keyring (`archlinux-keyring 1:20260909-1`). The public armored keyring was decoded only into the workspace, not modified/imported into host state. The accepted signing fingerprint is `83BC8889351B5DEBBB68416EB8AC08600F108CDF`; bad, expired or revoked verification statuses are rejected. No key was downloaded, generated or trusted ad hoc.
+
+The signed kernel packages' `.BUILDINFO` authenticates the retrieved official GitLab PKGBUILD bytes: SHA-256 `6c6decdb714b5e50108d8c66e156b37a16e57f9dbaaba0151fe452a20867d927` for linux and `52fc94e296d39305e5770c7da85cbfd2feb20df3d0156b7157969cbbbfde700a` for linux-zen. Those recipes name the source release tags and accepted packager key. Recipes were read as text, not executed.
+
+Official source Git tags were fetched into isolated bare repositories without checkout. Their raw annotated-tag payloads were independently verified locally with the same trusted Arch keyring and exact fingerprint. Git object hashes connect each verified tag to its target commit and tree:
+
+| Official source tag | Commit | `drivers/input/joystick/xpad.c` blob |
+|---|---|---|
+| `archlinux/linux v7.3.4-arch1` | `7bcd7458738c37c15864fa5cc1ffc4f21905e087` | `d2eb48d98fead7d89eb3e45613a52176c4fa5fad` |
+| `zen-kernel/zen-kernel v7.3.4-zen2` | `f18219c1624ecbe082f05aca073d6555eee91a2d` | `d2eb48d98fead7d89eb3e45613a52176c4fa5fad` |
+
+The existing pinned `xpad-linux-7.3.4.c` has that exact Git blob, so both distro sources are byte-identical to the reviewed 7.3.4 file. No new copy or unverified source is needed; both target aliases select this proven source and the same reviewed GIP patch. Signed headers give exact releases `7.3.4-arch1-2` and `7.3.4-zen2-2-zen`, both GCC 16.2.1 / BFD / no LTO. These target names come from verified headers, not guesses from package filenames. Original CachyOS mappings and source hashes remain unchanged, and unknown releases still fail closed.
+
+PR #3/#4 were filed by `ilevnn` and are retained as credited bug reports. Their exact raw heads remain unsafe to merge as-is; the independently implemented follow-up keeps their reporting attribution and Zixing Liu's patch attribution without claiming their recipes were executed or copying their unchecked download behavior.

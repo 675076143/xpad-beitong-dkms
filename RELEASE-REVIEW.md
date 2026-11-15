@@ -1,3 +1,5 @@
+> Historical assessment from earlier candidates. Current signed official-Arch inputs and legacy transaction results supersede the listed Arch/migration gaps; see [ARCH-RELEASE-VALIDATION.md](ARCH-RELEASE-VALIDATION.md). Authentication, production runtime/signing and publication remain unverified.
+
 # Release suitability review — 2026-11-14
 
 The former Linux-v6.18 candidate `9e626f4` is **red for release** despite successful compilation. Its missing stock changes were confirmed by full source diffs, not speculation. The replacement local candidate fixes source selection for exactly three reviewed CachyOS releases; it is not a universal Arch/Mint driver package or a hardware-validated release.

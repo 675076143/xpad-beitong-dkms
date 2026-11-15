@@ -12,6 +12,8 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 TARGETS = {'7.3.3-1-cachyos': ('7.3.3', 'CLANG', '1'),
            '7.3.4-1-cachyos': ('7.3.4', 'CLANG', '1'),
+           '7.3.4-arch1-2': ('7.3.4', 'GCC', ''),
+           '7.3.4-zen2-2-zen': ('7.3.4', 'GCC', ''),
            '6.18.60-2-cachyos-lts': ('6.18.60', 'GCC', '')}
 INPUTS = ('PKGBUILD', 'xpad-linux-7.3.3.c', 'xpad-linux-6.18.60.c',
           'beitong-linux-7.3.3.patch', 'beitong-linux-6.18.60.patch',

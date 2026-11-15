@@ -1,3 +1,5 @@
+> Historical assessment from earlier candidates. Current signed official-Arch inputs and legacy transaction results supersede the listed Arch/migration gaps; see [ARCH-RELEASE-VALIDATION.md](ARCH-RELEASE-VALIDATION.md). Authentication, production runtime/signing and publication remain unverified.
+
 # AUR release review — 2026-11-15
 
 **Do not replace the generic AUR package with this candidate yet.** Public AUR existence is now verified and controlled candidate lifecycle tests pass, but the candidate intentionally excludes official Arch/linux-zen. CachyOS GCC evidence does not establish official Arch support. The requested AUR publication acceptance is not achieved.

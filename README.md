@@ -8,13 +8,13 @@ The earlier local candidate `9e626f4` compiled, but its Linux v6.18 snapshot mis
 
 This revision vendors **three exact stable snapshots**, byte-identical to their corresponding CachyOS release source files: Linux 7.3.3, 7.3.4 and 6.18.60. Each has its own zero-fuzz Beitong patch and SHA-256 checksums. DKMS selects the local prepatched source for its exact target; it does not download anything or fall back to an older snapshot. Both the Makefile and DKMS config reject unreviewed releases. See [SOURCES.md](SOURCES.md) and [RELEASE-REVIEW.md](RELEASE-REVIEW.md).
 
-Only `7.3.3-1-cachyos`, `7.3.4-1-cachyos` and `6.18.60-2-cachyos-lts` are allowed. Adding another target requires independently checking its stock xpad, preserving fixes, updating the source map and retesting. A later kernel upgrade will be skipped rather than silently built from an older driver.
+Allowed exact targets are `7.3.3-1-cachyos`, `7.3.4-1-cachyos`, `6.18.60-2-cachyos-lts`, official Arch `7.3.4-arch1-2`, and official linux-zen `7.3.4-zen2-2-zen`. Adding another target requires independently checking its stock xpad, preserving fixes, updating the source map and retesting. A later kernel upgrade will be skipped rather than silently built from an older driver.
 
 ## Build and lifecycle
 
 On Arch/CachyOS, install DKMS and headers matching each intended target kernel. Clang-built targets also need Clang, LLVM and LLD; GCC-built targets need the matching GCC/binutils toolchain. Kernel configuration determines which kernel features are compiled into the driver.
 
-Build the package with `makepkg`. It contains only seven files under `/usr/src/xpad-beitong-1.3/`: three prepatched snapshots in `sources/`, `Kbuild`, `Makefile`, `dkms.conf` and the pinned source/attribution record `SOURCES.md`. There is no host-specific `.ko`, custom `.install` hook or modprobe configuration.
+Build the package with `makepkg`. It contains only seven files under `/usr/src/xpad-beitong-1.4/`: three prepatched snapshots in `sources/`, `Kbuild`, `Makefile`, `dkms.conf` and the pinned source/attribution record `SOURCES.md`. There is no host-specific `.ko`, custom `.install` hook or modprobe configuration.
 
 Arch's DKMS pacman hooks handle registration, rebuild, installation and removal during package transactions. Failures remain visible. This package does not explicitly load, unload or reload a live module. Review the DKMS transaction output and reboot when ready to activate an installed build. No package or module was installed during this validation.
 
@@ -30,7 +30,9 @@ Current and prior scoped x86_64 build evidence:
 |---|---|---|
 | `7.3.3-1-cachyos` | Clang 23.1.4, LLVM, ThinLTO | Prior 1.2 compile; headers no longer installed |
 | `7.3.4-1-cachyos` | Clang 23.1.5, LLVM, ThinLTO | Current isolated DKMS build; kernel used 23.1.4 |
-| `6.18.60-2-cachyos-lts` | GCC 16.2.1, binutils | Local compile |
+| `6.18.60-2-cachyos-lts` | GCC 16.2.1, binutils | Actual controlled package transactions |
+| `7.3.4-arch1-2` | GCC 16.2.1, binutils | Signed official inputs; actual transactions and legacy upgrade |
+| `7.3.4-zen2-2-zen` | GCC 16.2.1, binutils | Signed official inputs; actual transactions and legacy upgrade |
 
 Other target releases are intentionally rejected. Matching header release names do not establish compatibility with arbitrary custom source changes or architectures; independent source review, compilation and device testing remain necessary. See [VALIDATION-7.3.4.md](VALIDATION-7.3.4.md) for current results/commands and [VALIDATION.md](VALIDATION.md) for historical 1.2 evidence.
 
@@ -46,4 +48,4 @@ The external fork in [issue #1](https://github.com/675076143/xpad-beitong-dkms/i
 
 A practical, unexecuted reporter plan is available in [KP70C1-VALIDATION.md](KP70C1-VALIDATION.md). Publication remains blocked on the release gates in [RELEASE-REVIEW.md](RELEASE-REVIEW.md).
 
-**Generic AUR replacement is not ready:** official Arch/linux-zen and legacy upgrade behavior remain unverified and excluded by this candidate. See [AUR-READINESS.md](AUR-READINESS.md) for current AUR identity and actual controlled lifecycle evidence; these results do not authorize replacing the existing generic AUR package.
+Current official Arch/linux-zen targets and the reviewed legacy 1.0-1 migration have now passed isolated transactions. See [ARCH-RELEASE-VALIDATION.md](ARCH-RELEASE-VALIDATION.md) for signatures, exact scope, fingerprints, remaining runtime/signing boundaries and the unexecuted AUR publication plan. Unknown releases remain refused; do not expect a working Beitong workaround on unlisted kernels.
