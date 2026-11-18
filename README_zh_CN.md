@@ -43,7 +43,7 @@ sudo modprobe -r xpad && sudo modprobe xpad
 
 ## 工作原理
 
-1. 从当前内核 headers 复制 `xpad.c`
+1. 从主线内核镜像仓库下载 xpad.c ，对应的内核版本是7.3。但是只要内核版本差别不大，这个文件大概率可以兼容。
 2. 应用 GIP 初始化补丁
 3. 注册 DKMS，内核更新后自动重编
 4. 添加 modprobe 黑名单屏蔽内核自带的 `xpad` 模块
