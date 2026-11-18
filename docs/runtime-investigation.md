@@ -60,3 +60,18 @@ reconnect-dependent device initialization failure. Do not change the driver
 between observations. KP70 additionally needs both idle 20dd:518b and paired
 20bc:518b descriptors and a successful initialization capture from that model.
 The existing KP40 observations cannot substitute for KP70 hardware evidence.
+
+## Diagnostic script review
+
+The collector reports each missing/failed command explicitly and continues so an
+unloaded module or absent package does not hide later evidence. USB output is
+limited to Beitong 20bc/20dd device IDs and interface driver names via sysfs;
+no serials, USB descriptor strings, unrelated devices, kernel logs or module
+option values are emitted. USB enumeration can race unplugging; transient read
+errors are reported. Running the collector does not read input events.
+
+2026-11-18 follow-up: a 20bc:5127 KP40A is currently enumerated on this host;
+no 518b KP70 is present in the observed USB list. KP40 evidence cannot validate
+KP70. First collect a baseline without reconnecting; only ask the operator to
+press one button and move one stick when input observation is actually ready.
+Reboot comparison is a separate operator-controlled step, never automated here.
