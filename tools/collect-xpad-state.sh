@@ -24,6 +24,8 @@ if not root.is_dir():
     raise SystemExit('USB sysfs unavailable')
 found = False
 for device in sorted(root.iterdir()):
+    if ':' in device.name:  # USB interfaces have no device-level idVendor.
+        continue
     try:
         vendor = (device / 'idVendor').read_text().strip()
         if vendor not in ('20bc', '20dd'):
