@@ -1,86 +1,51 @@
 # xpad-beitong-dkms
 
-**Temporary** DKMS module for patched `xpad` with Beitong KP-series 2.4G gamepad fix. Will be deprecated once the patch is merged upstream (expected Linux 7.3 or later).
+Source-only DKMS package for the existing Beitong KP-series GIP initialization workaround, based on Zixing Liu's patch. This is a local packaging repair candidate, not a claim of newly verified hardware support.
 
-## Problem
+## Release scope and sources
 
-Beitong (北通) KP-series gamepads (KP20A, KP40A, KP50B, etc.) disconnect every ~1s when using the 2.4G wireless receiver on Linux. The firmware detects the host OS and power-cycles the USB connection if it doesn't receive specific Xbox One GIP (Game Input Protocol) initialization packets.
+The earlier local candidate `9e626f4` compiled, but its Linux v6.18 snapshot missed fixes already present in both target releases, including a Share-button packet-length check. It must not be published as a general replacement for newer stock xpad.
 
-**Symptoms:** USB device `20bc:5127` cycles connect/disconnect continuously; Bluetooth and USB-wired modes work fine.
+This revision vendors **three exact stable snapshots**, byte-identical to their corresponding CachyOS release source files: Linux 7.3.3, 7.3.4 and 6.18.60. Each has its own zero-fuzz Beitong patch and SHA-256 checksums. DKMS selects the local prepatched source for its exact target; it does not download anything or fall back to an older snapshot. Both the Makefile and DKMS config reject unreviewed releases. See [SOURCES.md](SOURCES.md) and [RELEASE-REVIEW.md](RELEASE-REVIEW.md).
 
-## Fix
+Allowed exact targets are `7.3.3-1-cachyos`, `7.3.4-1-cachyos`, `6.18.60-2-cachyos-lts`, official Arch `7.3.4-arch1-2`, and official linux-zen `7.3.4-zen2-2-zen`. Adding another target requires independently checking its stock xpad, preserving fixes, updating the source map and retesting. A later kernel upgrade will be skipped rather than silently built from an older driver.
 
-This package applies [Zixing Liu's patch](https://lore.kernel.org/linux-input/20260102030154.197749-2-liushuyu@aosc.io) to `xpad.c`, adding `FLAG_FORCE_INIT` which sends GIP acknowledge and announce packets during controller probing. The firmware recognizes these packets and stays in XINPUT mode.
+## Build and lifecycle
 
-The patch has been submitted upstream (v3, 2026-07-17) and is pending review. Once merged into the kernel, this DKMS package is no longer needed.
+On Arch/CachyOS, install DKMS and headers matching each intended target kernel. Clang-built targets also need Clang, LLVM and LLD; GCC-built targets need the matching GCC/binutils toolchain. Kernel configuration determines which kernel features are compiled into the driver.
 
-## Installation
+Build the package with `makepkg`. It contains only seven files under `/usr/src/xpad-beitong-1.4/`: three prepatched snapshots in `sources/`, `Kbuild`, `Makefile`, `dkms.conf` and the pinned source/attribution record `SOURCES.md`. There is no host-specific `.ko`, custom `.install` hook or modprobe configuration.
 
-### From AUR
+Arch's DKMS pacman hooks handle registration, rebuild, installation and removal during package transactions. Failures remain visible. This package does not explicitly load, unload or reload a live module. Review the DKMS transaction output and reboot when ready to activate an installed build. No package or module was installed during this validation.
 
-```bash
-yay -S xpad-beitong-dkms
-# or
-paru -S xpad-beitong-dkms
-```
+The Makefile wrapper reads the **target** `KDIR/.config`: `CONFIG_CC_IS_CLANG=y` selects `LLVM=1`, and `CONFIG_CC_IS_GCC=y` selects GCC. Unknown configuration fails explicitly. `KVER` must be an allowed release and match the target header release. A separate `Kbuild` prevents DKMS's `KERNELRELEASE` argument from bypassing the wrapper. `KVER` defaults to the running kernel only for direct manual builds; DKMS supplies its own target header directory and release.
 
-### From source
+Explicit `LLVM=...` and command-line `CC=...` overrides are passed through. `XPAD_LLVM=...` takes precedence even over LLVM arguments appended by DKMS (empty means GCC). Overrides do not establish compatibility with a mismatched kernel toolchain.
 
-```bash
-git clone https://github.com/675076143/xpad-beitong-dkms.git
-cd xpad-beitong-dkms
-makepkg -si
-```
+## Validation
 
-After installation, reboot or run:
+Current and prior scoped x86_64 build evidence:
 
-```bash
-sudo modprobe -r xpad && sudo modprobe xpad
-```
+| Target headers | Compiler selection | Validation |
+|---|---|---|
+| `7.3.3-1-cachyos` | Clang 23.1.4, LLVM, ThinLTO | Prior 1.2 compile; headers no longer installed |
+| `7.3.4-1-cachyos` | Clang 23.1.5, LLVM, ThinLTO | Current isolated DKMS build; kernel used 23.1.4 |
+| `6.18.60-2-cachyos-lts` | GCC 16.2.1, binutils | Actual controlled package transactions |
+| `7.3.4-arch1-2` | GCC 16.2.1, binutils | Signed official inputs; actual transactions and legacy upgrade |
+| `7.3.4-zen2-2-zen` | GCC 16.2.1, binutils | Signed official inputs; actual transactions and legacy upgrade |
 
-## Requirements
+Other target releases are intentionally rejected. Matching header release names do not establish compatibility with arbitrary custom source changes or architectures; independent source review, compilation and device testing remain necessary. See [VALIDATION-7.3.4.md](VALIDATION-7.3.4.md) for current results/commands and [VALIDATION.md](VALIDATION.md) for historical 1.2 evidence.
 
-- `dkms` package
-- Kernel headers for your running kernel (e.g., `linux-headers`, `linux-zen-headers`, `linux-cachyos-rc-headers`, etc.)
+Offline packaging/compiler-selection checks: `python tests/test_package.py`.
 
-## How it works
+## Device status
 
-1. Copies `xpad.c` from the running kernel's headers
-2. Applies the GIP init patch
-3. Registers with DKMS for automatic rebuilds on kernel updates
-4. Blacklists the in-kernel `xpad` module to ensure the patched one loads
+The existing patch retains the original `20bc` IDs: `5125–5128`, `512f–5130`, `5133–5134`, `5145–5146`, `5149–514a`, `5150–5155`, `5158–5159`, `515b–5160` and `5169–516a`. Recognition and compilation are not hardware verification. The original project reported KP40A operation; this repair did not interact with a controller.
 
-## Compatible Devices
+[Issue #2](https://github.com/675076143/xpad-beitong-dkms/issues/2) reports KP70C1 Mint as `20dd:518b` while idle and `20bc:518b` while active, and says manually adding the ID did not fix operation. KP70C1 remains **unverified**; no new quirk is enabled. The idle receiver is not assumed to be XInput. Useful next evidence is the active interface descriptors, kernel/driver logs and a separately approved hardware test comparing GIP initialization with XUSB descriptor handling. Do not infer support from an ID alone.
 
-The following VID:PID combinations are recognized:
+The external fork in [issue #1](https://github.com/675076143/xpad-beitong-dkms/issues/1) was reviewed as text only. Its newer XUSB/HID behavior was not imported. PRs [#3](https://github.com/675076143/xpad-beitong-dkms/pull/3) and [#4](https://github.com/675076143/xpad-beitong-dkms/pull/4) informed the packaging fixes; their recipes were not executed.
 
-| VID | PID | Device |
-|-----|-----|--------|
-| 20bc | 5125-5128 | KP20A/KP40A |
-| 20bc | 512f-5130 | KP70A |
-| 20bc | 5133-5134 | KP50B |
-| 20bc | 5145-5146 | KP40A/KP40B |
-| 20bc | 5149-514a | KP50C |
-| 20bc | 5150-5151 | KP50D |
-| 20bc | 5152-5153 | KP50E |
-| 20bc | 5154-5155 | KP40D |
-| 20bc | 5158-5159 | KP20D |
-| 20bc | 515b-515c | KP40D (White) |
-| 20bc | 515d-515e | KP40F (White) |
-| 20bc | 515f-5160 | KP70A |
-| 20bc | 5169-516a | KP40F (Black) |
+A practical, unexecuted reporter plan is available in [KP70C1-VALIDATION.md](KP70C1-VALIDATION.md). Publication remains blocked on the release gates in [RELEASE-REVIEW.md](RELEASE-REVIEW.md).
 
-## Upstream Status
-
-| Item | Status |
-|------|--------|
-| Patch author | Zixing Liu |
-| Submitted | v3, 2026-07-17 |
-| Target | Mainline Linux (expected 7.3 or later) |
-| This DKMS | Deprecated after upstream merge |
-
-## Links
-
-- [Wiki page with full investigation log](https://github.com/675076143/notes/wiki/beitong-btp-kp40a-linux-usb-disconnect)
-- [Upstream patch discussion (linux-input)](https://lore.kernel.org/linux-input/20260102030154.197749-2-liushuyu@aosc.io/)
-- [Arch Wiki - Gamepad (ShanWan section)](https://wiki.archlinux.org/title/Gamepad)
+Current official Arch/linux-zen targets and the reviewed legacy 1.0-1 migration have now passed isolated transactions. See [ARCH-RELEASE-VALIDATION.md](ARCH-RELEASE-VALIDATION.md) for signatures, exact scope, fingerprints, remaining runtime/signing boundaries and the unexecuted AUR publication plan. Unknown releases remain refused; do not expect a working Beitong workaround on unlisted kernels.
