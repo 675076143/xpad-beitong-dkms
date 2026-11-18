@@ -13,59 +13,20 @@ arch=('any')
 url='https://github.com/675076143/xpad-beitong-dkms'
 license=('GPL2')
 depends=('dkms')
-install="${pkgname}.install"
 source=(
   'beitong-gip-init.patch'
   'Makefile'
   'dkms.conf'
+  'xpad.c::https://raw.githubusercontent.com/torvalds/linux/refs/tags/v7.3/drivers/input/joystick/xpad.c'
 )
-sha256sums=('SKIP' 'SKIP' 'SKIP')
+sha256sums=('324f341da568c69a2e8e85d9cce787c8f88c71b7b83da82e83113bb0205cb3dd'
+            '14997cba13de06821537a419ca185a7e424495f420cc91b701e4562e6e5adad8'
+            '36a339eccc17148a1c878fed96daec7e121ccbb9b819408e5cfb0bc45858d809'
+            'b47281151829fc382c4bcb5f466865f476a6f4ebfacd617ee49393f99c1e3950')
+
 
 prepare() {
-  local src
-  for d in /usr/lib/modules/*/build/drivers/input/joystick; do
-    if [[ -f "${d}/xpad.c" ]]; then
-      src="${d}/xpad.c"
-      break
-    elif [[ -f "${d}/xpad.c.zst" ]]; then
-      src="${d}/xpad.c.zst"
-      break
-    fi
-  done
-
-  if [[ -z "${src}" ]]; then
-    error 'xpad.c not found in any kernel headers'
-    error 'Install linux-headers for your running kernel (e.g. linux-headers)'
-    exit 1
-  fi
-
-  msg2 "Using xpad.c from: ${src}"
-
-  if [[ "${src}" == *.zst ]]; then
-    zstd -d -f "${src}" -o "${srcdir}/xpad.c"
-  else
-    cp "${src}" "${srcdir}/xpad.c"
-  fi
-
-  msg2 "Copied xpad.c ($(wc -l < xpad.c) lines)"
-
-  cd "${srcdir}"
-  patch -Np0 -i beitong-gip-init.patch
-}
-
-build() {
-  cd "${srcdir}"
-
-  local running_kernel="$(uname -r)"
-  local kdir="/usr/lib/modules/${running_kernel}/build"
-
-  if [[ ! -d "${kdir}" ]]; then
-    warning "Kernel build dir not found for ${running_kernel}. DKMS will build at install time."
-    return 0
-  fi
-
-  msg2 "Building for kernel ${running_kernel}..."
-  make -C "${kdir}" M="${srcdir}" LLVM=1 modules
+  msg2 "Using downloaded xpad.c, corresponding kernal version is v7.3"
 }
 
 package() {
@@ -73,14 +34,9 @@ package() {
   local dkms_dst="${pkgdir}/usr/src/xpad-beitong-${pkgver}"
 
   install -Dm644 xpad.c               "${dkms_dst}/xpad.c"
-  install -Dm644 beitong-gip-init.patch "${dkms_dst}/beitong-gip-init.patch"
+  install -Dm644 beitong-gip-init.patch "${dkms_dst}/patches/beitong-gip-init.patch"
   install -Dm644 Makefile             "${dkms_dst}/Makefile"
 
   sed "s/@PKGVER@/${pkgver}/g" "${srcdir}/dkms.conf" > "${dkms_dst}/dkms.conf"
   chmod 644 "${dkms_dst}/dkms.conf"
-
-  local running_kernel="$(uname -r)"
-  if [[ -f xpad.ko ]]; then
-    install -Dm644 xpad.ko "${pkgdir}/usr/lib/modules/${running_kernel}/updates/dkms/xpad.ko"
-  fi
 }
